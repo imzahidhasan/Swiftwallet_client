@@ -1,14 +1,37 @@
 import React from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
+import api from '../../hooks/useAxios';
+import Swal from 'sweetalert2';
 
 function Login() {
-    const handleSubmit = (e) => {
+    const navigate = useNavigate()
+    const handleSubmit = async (e) => {
         e.preventDefault()
         const userInfo = {
             email: e.target.email.value,
             pin: e.target.pin.value
         }
-        console.log(userInfo);
+        const res = await api.post('/checkUser', userInfo)
+        if (res.data.notFound) {
+            Swal.fire({
+                icon: 'warning',
+                title: 'User is not Found',
+                text: 'there is not user with this email or phone number!'
+            })
+            return
+        }
+
+        if (res.data._id) {
+            console.log(res.data);
+            Swal.fire({
+                icon: 'success',
+                title: 'SUCCESSFUL',
+                text: 'logged in to your account successfully!'
+            })
+            localStorage.setItem('token', res.data.token)
+            navigate('/dashboard')
+        }
+
     }
     return (
         <div className="flex items-center justify-center min-h-screen p-4 bg-gray-50 dark:bg-gray-900">
